@@ -13,9 +13,11 @@ shots_2014_season$FGM[shots_2014_season$SHOT_RESULT == "made"] <- 1
 shots_2014_season$FGM[shots_2014_season$SHOT_RESULT == "missed"] <- 0
 shots_2014_season$CLOSEST_DEFENDER_PLAYER_ID <- as.factor(shots_2014_season$CLOSEST_DEFENDER_PLAYER_ID)
 
+# Replace missing values
 shots_2014_season$SHOT_CLOCK[is.na(shots_2014_season$SHOT_CLOCK) & shots_2014_season$GAME_CLOCK > 24] <- mean(shots_2014_season$SHOT_CLOCK, na.rm=TRUE)
 shots_2014_season$SHOT_CLOCK[is.na(shots_2014_season$SHOT_CLOCK) & shots_2014_season$GAME_CLOCK <= 24] <- 0
 
+# Split data into training and validation sets
 all_star_2014_date <- as.Date("2014-02-15")
 shots_2014_training <- subset(shots_2014_season, DATE < all_star_2014_date)
 shots_2014_validation <- subset(shots_2014_season, DATE > all_star_2014_date)
