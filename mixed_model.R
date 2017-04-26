@@ -1,7 +1,5 @@
 shots_2014_season <- read.csv("2014_regular_season_shots.csv")
-shots_2015_season <- read.csv("2015_regular_season_shots.csv")
 shots_2014_playoffs <- read.csv("2014_playoffs_shots.csv")
-shots_2015_playoffs <- read.csv("2015_playoffs_shots.csv")
 
 shots_2014_season$DATE <- as.Date(shots_2014_season$DATE, format="%b %d, %Y")
 shots_2014_season$SHOOTER_ID <- as.factor(shots_2014_season$SHOOTER_ID)
@@ -12,6 +10,15 @@ shots_2014_season$PTS <- as.factor(shots_2014_season$PTS)
 shots_2014_season$FGM[shots_2014_season$SHOT_RESULT == "made"] <- 1
 shots_2014_season$FGM[shots_2014_season$SHOT_RESULT == "missed"] <- 0
 shots_2014_season$CLOSEST_DEFENDER_PLAYER_ID <- as.factor(shots_2014_season$CLOSEST_DEFENDER_PLAYER_ID)
+shots_2014_playoffs$DATE <- as.Date(shots_2014_playoffs$DATE, format="%b %d, %Y")
+shots_2014_playoffs$SHOOTER_ID <- as.factor(shots_2014_playoffs$SHOOTER_ID)
+shots_2014_playoffs$PERIOD <- as.factor(shots_2014_playoffs$PERIOD)
+shots_2014_playoffs$GAME_CLOCK_PERIOD <- as.factor(shots_2014_playoffs$GAME_CLOCK_PERIOD)
+shots_2014_playoffs$PTS_TYPE <- as.factor(shots_2014_playoffs$PTS_TYPE)
+shots_2014_playoffs$PTS <- as.factor(shots_2014_playoffs$PTS)
+shots_2014_playoffs$FGM[shots_2014_playoffs$SHOT_RESULT == "made"] <- 1
+shots_2014_playoffs$FGM[shots_2014_playoffs$SHOT_RESULT == "missed"] <- 0
+shots_2014_playoffs$CLOSEST_DEFENDER_PLAYER_ID <- as.factor(shots_2014_playoffs$CLOSEST_DEFENDER_PLAYER_ID)
 
 # Replace missing values
 shots_2014_season$SHOT_CLOCK[is.na(shots_2014_season$SHOT_CLOCK) & shots_2014_season$GAME_CLOCK > 24] <- mean(shots_2014_season$SHOT_CLOCK, na.rm=TRUE)
@@ -48,3 +55,9 @@ fit3 <- glmer(FGM ~ .-SHOOTER_ID-CLOSEST_DEFENDER_ID + (1|SHOOTER_ID + SHOT_DIST
 
 fit3_validation_loss <- log_loss(shots_2014_validation$FGM, 
                                  predict(fit3, shots_2014_validation[variables], allow.new.levels=TRUE, type="response"))
+
+final_fit <- glmer(FGM ~ .-SHOOTER_ID-CLOSEST_DEFENDER_ID + (1|SHOOTER_ID + SHOT_DIST + CLOSE_DEF_DIST) + (1|CLOSEST_DEFENDER_PLAYER_ID + SHOT_DIST + CLOSE_DEF_DIST), 
+                   shots_2014_season[variables], family=binomial(logit), nAGQ=0)
+
+test_loss <- log_loss(shots_2014_playoffs$FGM, 
+                      predict(final_fit, shots_2014_playoffs[variables], allow.new.levels=TRUE, type="response"))
