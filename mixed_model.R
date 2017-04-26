@@ -20,14 +20,20 @@ shots_2014_playoffs$FGM[shots_2014_playoffs$SHOT_RESULT == "made"] <- 1
 shots_2014_playoffs$FGM[shots_2014_playoffs$SHOT_RESULT == "missed"] <- 0
 shots_2014_playoffs$CLOSEST_DEFENDER_PLAYER_ID <- as.factor(shots_2014_playoffs$CLOSEST_DEFENDER_PLAYER_ID)
 
-# Replace missing values
-shots_2014_season$SHOT_CLOCK[is.na(shots_2014_season$SHOT_CLOCK) & shots_2014_season$GAME_CLOCK > 24] <- mean(shots_2014_season$SHOT_CLOCK, na.rm=TRUE)
 shots_2014_season$SHOT_CLOCK[is.na(shots_2014_season$SHOT_CLOCK) & shots_2014_season$GAME_CLOCK <= 24] <- 0
+shots_2014_playoffs$SHOT_CLOCK[is.na(shots_2014_playoffs$SHOT_CLOCK) & shots_2014_playoffs$GAME_CLOCK <= 24] <- 0
 
 # Split data into training and validation sets
 all_star_2014_date <- as.Date("2014-02-15")
 shots_2014_training <- subset(shots_2014_season, DATE < all_star_2014_date)
 shots_2014_validation <- subset(shots_2014_season, DATE > all_star_2014_date)
+
+# Replace missing values
+training_set_mean <- mean(shots_2014_training$SHOT_CLOCK, na.rm=TRUE)
+shots_2014_training$SHOT_CLOCK[is.na(shots_2014_training$SHOT_CLOCK) & shots_2014_training$GAME_CLOCK > 24] <- training_set_mean
+shots_2014_validation$SHOT_CLOCK[is.na(shots_2014_validation$SHOT_CLOCK) & shots_2014_validation$GAME_CLOCK > 24] <- training_set_mean
+
+shots_2014_playoffs$SHOT_CLOCK[is.na(shots_2014_playoffs$SHOT_CLOCK) & shots_2014_playoffs$GAME_CLOCK > 24] <- mean(shots_2014_season$SHOT_CLOCK, na.rm=TRUE)
 
 log_loss <- function(y, p) {
   return(sum((y - 1) * log(1 - p) - y * log(p)))
