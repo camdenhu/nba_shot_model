@@ -42,3 +42,9 @@ fit2 <- glmer(FGM ~ .-SHOOTER_ID-CLOSEST_DEFENDER_ID + (1|SHOOTER_ID + SHOT_DIST
 
 fit2_validation_loss <- log_loss(shots_2014_validation$FGM, 
                                  predict(fit2, shots_2014_validation[variables], allow.new.levels=TRUE, type="response"))
+
+fit3 <- glmer(FGM ~ .-SHOOTER_ID-CLOSEST_DEFENDER_ID + (1|SHOOTER_ID + SHOT_DIST + CLOSE_DEF_DIST) + (1|CLOSEST_DEFENDER_PLAYER_ID + SHOT_DIST + CLOSE_DEF_DIST), 
+              shots_2014_training[variables], family=binomial(logit), nAGQ=0)
+
+fit3_validation_loss <- log_loss(shots_2014_validation$FGM, 
+                                 predict(fit3, shots_2014_validation[variables], allow.new.levels=TRUE, type="response"))
