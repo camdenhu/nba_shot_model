@@ -22,6 +22,10 @@ all_star_2014_date <- as.Date("2014-02-15")
 shots_2014_training <- subset(shots_2014_season, DATE < all_star_2014_date)
 shots_2014_validation <- subset(shots_2014_season, DATE > all_star_2014_date)
 
+log_loss <- function(y, p) {
+  return(sum((y - 1) * log(1 - p) - y * log(p)))
+}
+
 library(lme4)
 
 variables <- c("SHOT_DIST", "CLOSE_DEF_DIST", "LOCATION", "TOUCH_TIME", "DRIBBLES", "GAME_CLOCK_PERIOD", "PTS_TYPE",
@@ -30,11 +34,11 @@ variables <- c("SHOT_DIST", "CLOSE_DEF_DIST", "LOCATION", "TOUCH_TIME", "DRIBBLE
 fit <- glmer(FGM ~ .-SHOOTER_ID-CLOSEST_DEFENDER_ID + (1|SHOOTER_ID) + (1|CLOSEST_DEFENDER_PLAYER_ID), 
              shots_2014_training[variables], family=binomial(logit), nAGQ=0)
 
-fit_validation_error <- shots_2014_validation$FGM - predict(fit, shots_2014_validation[variables], allow.new.levels=TRUE, type="response")
-fit_validation_rmse <- sqrt(mean(sapply(fit_validation_error, function(x) x^2)))
+fit_validation_loss <- log_loss(shots_2014_validation$FGM, 
+                                predict(fit, shots_2014_validation[variables], allow.new.levels=TRUE, type="response"))
 
 fit2 <- glmer(FGM ~ .-SHOOTER_ID-CLOSEST_DEFENDER_ID + (1|SHOOTER_ID + SHOT_DIST) + (1|CLOSEST_DEFENDER_PLAYER_ID + SHOT_DIST), 
-             shots_2014_training[variables], family=binomial(logit), nAGQ=0)
+              shots_2014_training[variables], family=binomial(logit), nAGQ=0)
 
-fit2_validation_error <- shots_2014_validation$FGM - predict(fit2, shots_2014_validation[variables], allow.new.levels=TRUE, type="response")
-fit2_validation_rmse <- sqrt(mean(sapply(fit2_validation_error, function(x) x^2)))
+fit2_validation_loss <- log_loss(shots_2014_validation$FGM, 
+                                 predict(fit2, shots_2014_validation[variables], allow.new.levels=TRUE, type="response"))
